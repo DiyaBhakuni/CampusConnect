@@ -1,0 +1,24 @@
+# Environment files - never commit these
+.env
+.env.*
+!.env.example
+
+# Backend build
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend build
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
