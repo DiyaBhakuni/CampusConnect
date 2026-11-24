@@ -31,17 +31,23 @@ export default function Navbar({ onMenuClick, title }) {
         <div className="hidden sm:block leading-tight">
           <p className="text-navy-800 font-bold text-sm" style={{ color: '#1a2e5a' }}>Quantara University</p>
           <p className="text-gray-500 text-xs">(Deemed to be University)</p>
-          <p className="text-red-600 text-xs font-medium">
-            {user?.role === 'ROLE_ADMIN' ? 'ADMIN PORTAL' : user?.role === 'ROLE_FACULTY' ? 'FACULTY PORTAL' : 'STUDENT PORTAL'}
-          </p>
         </div>
       </div>
 
       {/* Divider */}
       <div className="hidden sm:block w-px h-10 bg-gray-200 flex-shrink-0" />
 
-      {/* Page title */}
-      <h2 className="text-gray-700 font-semibold text-sm hidden md:block flex-shrink-0">{title}</h2>
+      {/* Page title or University name on dashboard */}
+      {title ? (
+        <h2 className="text-gray-700 font-semibold text-sm hidden md:block flex-shrink-0">{title}</h2>
+      ) : (
+        <div className="hidden md:block flex-shrink-0">
+          <p className="text-sm font-bold" style={{ color: '#1a2e5a' }}>Quantara University</p>
+          <p className="text-xs text-gray-500">
+            {user?.role === 'ROLE_FACULTY' ? 'Faculty Portal' : user?.role === 'ROLE_ADMIN' ? 'Admin Portal' : 'Student Portal'}
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSearch} className="flex-1 max-w-sm ml-auto flex items-center gap-2">
         <div className="relative flex-1">

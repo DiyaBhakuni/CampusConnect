@@ -43,12 +43,12 @@ public class StudentServiceImpl implements StudentService {
                 .findByEventDateGreaterThanEqualAndActiveTrueOrderByEventDateAsc(LocalDate.now())
                 .stream().limit(3).map(e -> EventResponse.builder()
                         .id(e.getId()).title(e.getTitle()).eventDate(e.getEventDate())
-                        .venue(e.getVenue()).build())
+                        .venue(e.getVenue()).description(e.getDescription()).build())
                 .collect(Collectors.toList());
 
         List<AnnouncementResponse> recentAnnouncements = announcementRepository.findForStudents()
                 .stream().limit(3).map(a -> AnnouncementResponse.builder()
-                        .id(a.getId()).title(a.getTitle()).postedAt(a.getPostedAt()).build())
+                        .id(a.getId()).title(a.getTitle()).postedAt(a.getPostedAt()).content(a.getContent()).build())
                 .collect(Collectors.toList());
 
         long unreadNotifs = notificationRepository.countByUserIdAndReadFalse(userId);
@@ -56,6 +56,9 @@ public class StudentServiceImpl implements StudentService {
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("studentName", student.getUser().getFullName());
         dashboard.put("rollNumber", student.getRollNumber());
+        dashboard.put("program", student.getProgram());
+        dashboard.put("semester", student.getSemester());
+        dashboard.put("department", student.getDepartment() != null ? student.getDepartment().getName() : null);
         dashboard.put("enrolledCourses", summaries.size());
         dashboard.put("overallAttendance", Math.round(overallAttendance * 10.0) / 10.0);
         dashboard.put("attendanceSummary", summaries);

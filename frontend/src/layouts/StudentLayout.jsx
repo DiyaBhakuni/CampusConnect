@@ -20,7 +20,8 @@ const navItems = [
 export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useLocation()
-  const title = navItems.find(n => n.to === pathname)?.label ?? 'Student'
+  const rawTitle = navItems.find(n => n.to === pathname)?.label ?? 'Student'
+  const title = pathname === '/student' ? null : rawTitle
 
   return (
     <div className="flex h-screen overflow-hidden">

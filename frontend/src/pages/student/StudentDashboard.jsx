@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { AlertTriangle, BookOpen, Calendar, Gift } from 'lucide-react'
+import { AlertTriangle, BookOpen, Calendar, Gift, X } from 'lucide-react'
 import api from '../../api/axiosConfig'
 import StatCard from '../../components/common/StatCard'
 import Loading from '../../components/common/Loading'
@@ -34,6 +34,7 @@ const HOLIDAYS = [
 export default function StudentDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState(null) // { type: 'event'|'announcement', item }
   const holidayRef = useRef(null)
 
   useEffect(() => {
@@ -73,18 +74,88 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Welcome, {data?.studentName}!</h1>
-        <p className="text-gray-500 text-sm mt-1">Roll No: {data?.rollNumber}</p>
-      </div>
 
-      {/* Motivational quote — like reference */}
+      {/* Popup Modal */}
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setModal(null)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 z-10" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X size={18} />
+            </button>
+
+            {modal.type === 'event' && (
+              <>
+                <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center mb-4">
+                  <Calendar size={18} className="text-yellow-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">{modal.item.title}</h3>
+                <p className="text-sm text-gray-500 mb-4">{modal.item.eventDate}{modal.item.venue ? ` · ${modal.item.venue}` : ''}</p>
+                {modal.item.description && <p className="text-sm text-gray-700 leading-relaxed">{modal.item.description}</p>}
+              </>
+            )}
+
+            {modal.type === 'announcement' && (
+              <>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+                  <BookOpen size={18} className="text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">{modal.item.title}</h3>
+                <p className="text-xs text-gray-400 mb-4">{modal.item.postedAt ? new Date(modal.item.postedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+                {modal.item.content && <p className="text-sm text-gray-700 leading-relaxed">{modal.item.content}</p>}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Motivational quote */}
       <div className="bg-blue-50 border-l-4 border-blue-400 rounded-lg px-6 py-4 flex items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <span className="text-blue-300 text-5xl font-serif leading-none select-none">"</span>
           <p className="text-gray-700 text-sm italic mt-2">You are never too old to set another goal or to dream a new dream</p>
         </div>
         <p className="text-gray-500 text-xs font-semibold whitespace-nowrap flex-shrink-0">— C.S. LEWIS</p>
+      </div>
+
+      {/* Welcome banner */}
+      <div className="rounded-2xl bg-gradient-to-r from-blue-800 via-blue-700 to-indigo-700 p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="flex-1">
+          <h2 className="text-2xl font-extrabold text-white mb-2">
+            Welcome back, {data?.studentName?.split(' ')[0]?.toUpperCase()} ⭐
+          </h2>
+          <p className="text-blue-100 text-sm max-w-xl leading-relaxed mb-5">
+            Your Quantara University Student Portal gives you one place to manage academics, attendance, courses, examination, announcements and student services.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              `Roll No: ${data?.rollNumber}`,
+              `Program: ${data?.program || '—'}`,
+              `Semester: ${data?.semester || '—'}`,
+            ].map((info, i) => (
+              <span key={i} className="px-3 py-1.5 rounded-full text-xs font-medium text-white border border-white/25 bg-white/10">
+                {info}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Mini Digital Student Card */}
+        <div className="bg-white/10 border border-white/20 rounded-xl p-5 min-w-[220px] flex-shrink-0">
+          <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest mb-3">Digital Student Card</p>
+          <div className="space-y-1.5 text-sm">
+            {[
+              ['Name', data?.studentName],
+              ['Roll No', data?.rollNumber],
+              ['Program', data?.program],
+              ['Semester', data?.semester],
+            ].map(([label, val]) => (
+              <div key={label} className="flex gap-2">
+                <span className="text-blue-300 font-medium min-w-[70px]">{label}:</span>
+                <span className="text-white font-semibold truncate">{val || '—'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {data?.hasAttendanceAlert && (
@@ -147,7 +218,8 @@ export default function StudentDashboard() {
           {data?.upcomingEvents?.length === 0 ? <EmptyState title="No upcoming events" /> : (
             <div className="space-y-2">
               {data?.upcomingEvents?.map(e => (
-                <div key={e.id} className="p-2 rounded border border-gray-100">
+                <div key={e.id} onClick={() => setModal({ type: 'event', item: e })}
+                  className="p-2 rounded border border-gray-100 cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-colors">
                   <p className="text-sm font-medium text-gray-800">{e.title}</p>
                   <p className="text-xs text-gray-500">{e.eventDate} {e.venue ? `· ${e.venue}` : ''}</p>
                 </div>
@@ -163,7 +235,8 @@ export default function StudentDashboard() {
           {data?.recentAnnouncements?.length === 0 ? <EmptyState title="No announcements" /> : (
             <div className="space-y-2">
               {data?.recentAnnouncements?.map(a => (
-                <div key={a.id} className="flex items-start justify-between p-2 rounded border border-gray-100">
+                <div key={a.id} onClick={() => setModal({ type: 'announcement', item: a })}
+                  className="flex items-start justify-between p-2 rounded border border-gray-100 cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-colors">
                   <p className="text-sm text-gray-800">{a.title}</p>
                   <span className="text-xs text-gray-400 ml-4 whitespace-nowrap">{a.postedAt ? new Date(a.postedAt).toLocaleDateString() : ''}</span>
                 </div>

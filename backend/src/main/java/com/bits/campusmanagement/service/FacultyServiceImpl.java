@@ -40,11 +40,28 @@ public class FacultyServiceImpl implements FacultyService {
                 .findTodayClassesForFaculty(faculty.getId(), today)
                 .stream().map(adminService::mapToTimetableResponse).collect(Collectors.toList());
 
+        List<EventResponse> upcomingEvents = eventRepository
+                .findByEventDateGreaterThanEqualAndActiveTrueOrderByEventDateAsc(LocalDate.now())
+                .stream().limit(3).map(e -> EventResponse.builder()
+                        .id(e.getId()).title(e.getTitle()).eventDate(e.getEventDate())
+                        .venue(e.getVenue()).description(e.getDescription()).build())
+                .collect(Collectors.toList());
+
+        List<AnnouncementResponse> recentAnnouncements = announcementRepository.findForFaculty()
+                .stream().limit(3).map(a -> AnnouncementResponse.builder()
+                        .id(a.getId()).title(a.getTitle()).postedAt(a.getPostedAt()).content(a.getContent()).build())
+                .collect(Collectors.toList());
+
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("facultyName", faculty.getUser().getFullName());
+        dashboard.put("employeeNumber", faculty.getEmployeeNumber());
+        dashboard.put("designation", faculty.getDesignation());
+        dashboard.put("department", faculty.getDepartment() != null ? faculty.getDepartment().getName() : null);
         dashboard.put("assignedCourses", assignments.size());
         dashboard.put("totalStudents", totalStudents);
         dashboard.put("todayClasses", todayClasses);
+        dashboard.put("upcomingEvents", upcomingEvents);
+        dashboard.put("recentAnnouncements", recentAnnouncements);
         return dashboard;
     }
 
